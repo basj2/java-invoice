@@ -1,42 +1,41 @@
 package pl.edu.agh.mwo.invoice;
 
 import java.math.BigDecimal;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import pl.edu.agh.mwo.invoice.product.Product;
 
 public class Invoice {
-	private Collection<Product> products;
+	private Map<Product, Integer> products = new HashMap<>();
 
 	public void addProduct(Product product) {
-		// TODO: implement
+		this.addProduct(product, 1);
 	}
 
 	public void addProduct(Product product, Integer quantity) {
-		// TODO: implement
+		if (quantity <= 0) {
+			throw new IllegalArgumentException("Quantity cannot be zero or negative.");
+		}
+		this.products.put(product, quantity);
 	}
 
 	public BigDecimal getNetPrice() {
 		BigDecimal sum = BigDecimal.ZERO;
-		try {
-			for (Product product : products) {
-				sum = sum.add(product.getPrice());
+			for (Product product : this.products.keySet()) {
+				Integer quantity = this.products.get(product);
+				sum = sum.add(product.getPrice().multiply(new BigDecimal (quantity)));
 			}
-		} catch (NullPointerException e) {
-			System.out.println("NullPointerException caught");
-		}
 		return sum;
 	}
 
 	public BigDecimal getTax() {
 		BigDecimal sum = BigDecimal.ZERO;
-		try {
-			for (Product product : products) {
-				sum = sum.add(product.getPrice().multiply(getTax()));
+			for (Product product : products.keySet()) {
+				sum = sum.add(product.getTaxPercent()
+						.multiply(new BigDecimal (products.get(product))
+								.multiply(product.getPrice())));
 			}
-		} catch (NullPointerException e) {
-			System.out.println("NullPointerException caught");
-		}
 		return sum;
 	}
 
