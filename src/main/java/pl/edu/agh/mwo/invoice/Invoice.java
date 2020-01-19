@@ -16,15 +16,31 @@ public class Invoice {
 		// TODO: implement
 	}
 
-	public BigDecimal getSubtotal() {
-		return null;
+	public BigDecimal getNetPrice() {
+		BigDecimal sum = BigDecimal.ZERO;
+		try {
+			for (Product product : products) {
+				sum = sum.add(product.getPrice());
+			}
+		} catch (NullPointerException e) {
+			System.out.println("NullPointerException caught");
+		}
+		return sum;
 	}
 
 	public BigDecimal getTax() {
-		return null;
+		BigDecimal sum = BigDecimal.ZERO;
+		try {
+			for (Product product : products) {
+				sum = sum.add(product.getPrice().multiply(getTax()));
+			}
+		} catch (NullPointerException e) {
+			System.out.println("NullPointerException caught");
+		}
+		return sum;
 	}
 
-	public BigDecimal getTotal() {
-		return null;
+	public BigDecimal getGrossPrice() {
+		return getNetPrice().add(getTax());
 	}
 }
