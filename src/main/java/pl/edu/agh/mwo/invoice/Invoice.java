@@ -18,8 +18,19 @@ public class Invoice {
     public void addProduct(Product product, Integer quantity) {
         if (product == null || quantity <= 0) {
             throw new IllegalArgumentException();
+        } else {
+            boolean productFound = false;
+            for (Product productOnInvoice : products.keySet()) {
+                if (productOnInvoice.getName() == product.getName()
+                        && productOnInvoice.getPrice().compareTo(product.getPrice()) == 0) {
+                    products.put(productOnInvoice, products.get(productOnInvoice) + quantity);
+                    productFound = true;
+                }
+            }
+            if (!productFound) {
+                products.put(product, quantity);
+            }
         }
-        products.put(product, quantity);
     }
 
     public BigDecimal getNetTotal() {
@@ -65,7 +76,7 @@ public class Invoice {
         productList += "Liczba pozycji: " + products.size();
         return productList;
     }
-    
+
     public void printProductList() {
         System.out.println(getProductList());
     }
