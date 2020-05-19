@@ -8,7 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import pl.edu.agh.mwo.invoice.Invoice;
+import pl.edu.agh.mwo.invoice.product.BottleOfWine;
 import pl.edu.agh.mwo.invoice.product.DairyProduct;
+import pl.edu.agh.mwo.invoice.product.FuelCanister;
 import pl.edu.agh.mwo.invoice.product.OtherProduct;
 import pl.edu.agh.mwo.invoice.product.Product;
 import pl.edu.agh.mwo.invoice.product.TaxFreeProduct;
@@ -139,9 +141,9 @@ public class InvoiceTest {
 
     @Test
     public void testInvoiceHasProperProductsNumberOnTheList() {
-        // 2x kubek - price: 10
+        // 2x kubek
         invoice.addProduct(new TaxFreeProduct("Kubek", new BigDecimal("5")), 2);
-        // 3x kozi serek - price: 30
+        // 3x kozi serek
         invoice.addProduct(new DairyProduct("Kozi Serek", new BigDecimal("10")), 3);
         String[] productList = invoice.getProductList().split("\n");
         Assert.assertEquals(invoice.getProducts().size(), productList.length - 2);
@@ -149,16 +151,16 @@ public class InvoiceTest {
 
     @Test
     public void testInvoiceHasProperItemsNumber() {
-        // 2x chleb - price with tax: 10
+        // 2x chleb
         invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
-        // 3x chedar - price with tax: 32.40
+        // 3x chedar
         invoice.addProduct(new DairyProduct("Chedar", new BigDecimal("10")), 3);
-        // 1000x pinezka - price with tax: 12.30
+        // 1000x pinezka
         invoice.addProduct(new OtherProduct("Pinezka", new BigDecimal("0.01")), 1000);
         String[] productList = invoice.getProductList().split("\n");
         String lastLine = productList[productList.length - 1];
         int itemsNumber = Integer.parseInt(lastLine.substring(16));
-        //invoice.printProductList();
+        // invoice.printProductList();
         Assert.assertEquals(invoice.getProducts().size(), itemsNumber);
     }
 
@@ -168,7 +170,7 @@ public class InvoiceTest {
         invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
         // 1x chleb - price with tax: 10
         invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")));
-        //invoice.printProductList();
+        // invoice.printProductList();
         Assert.assertEquals(invoice.getProducts().size(), 1);
     }
 
@@ -176,11 +178,59 @@ public class InvoiceTest {
     public void testInvoiceHasTwoItemsForProductsWithTheSameNameAndDifferentPrice() {
         // 2x chleb - price with tax: 10
         invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
-        // 3x kozi serek - price: 30
-        invoice.addProduct(new DairyProduct("Kozi Serek", new BigDecimal("10")), 3);
         // 1x chleb - price with tax: 10
         invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("7")), 2);
+        // invoice.printProductList();
+        Assert.assertEquals(invoice.getProducts().size(), 2);
+    }
+
+    @Test
+    public void testFuelCanisterHasExciseAndNoTax() {
+        invoice.addProduct(new FuelCanister("Paliwo", new BigDecimal("90")), 1);
         //invoice.printProductList();
-        Assert.assertEquals(invoice.getProducts().size(), 3);
+        Assert.assertThat(new BigDecimal("95.56"), Matchers.comparesEqualTo(invoice.getGrossTotal()));
+    }
+
+    @Test
+    public void testBottleOfWineHasExciseAndTax() {
+        invoice.addProduct(new BottleOfWine("Wino", new BigDecimal("100")), 1);
+        //invoice.printProductList();
+        Assert.assertThat(new BigDecimal("128.56"), Matchers.comparesEqualTo(invoice.getGrossTotal()));
+    }
+
+    @Test
+    public void testInvoiceHasPropoerTotalWithQuantityMoreThanOneAndExciseTaxProducts() {
+        // 2x chleb - price with tax: 10
+        invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
+        // 3x chedar - price with tax: 32.40
+        invoice.addProduct(new DairyProduct("Chedar", new BigDecimal("10")), 3);
+        // 1000x pinezka - price with tax: 12.30
+        invoice.addProduct(new OtherProduct("Pinezka", new BigDecimal("0.01")), 1000);
+        // 2x paliwo - price with excise tax: 55.56
+        invoice.addProduct(new FuelCanister("Paliwo", new BigDecimal("50")), 2);
+        // 4x wino - price with excise tax: 120.64
+        invoice.addProduct(new BottleOfWine("Wino", new BigDecimal("20")), 4);
+        //invoice.printProductList();
+        Assert.assertThat(new BigDecimal("286.46"), Matchers.comparesEqualTo(invoice.getGrossTotal()));
+    }
+
+    @Test
+    public void testInvoiceHasOneItemForEachProductWithQuantityMoreThanOne() {
+        // 2x chleb - price with tax: 10
+        invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 2);
+        // 3x chedar - price with tax: 32.40
+        invoice.addProduct(new DairyProduct("Chedar", new BigDecimal("10")), 3);
+        // 2x paliwo - price with excise tax: 55.56
+        invoice.addProduct(new FuelCanister("Paliwo", new BigDecimal("50")), 2);
+        // 4x wino - price with excise tax: 120.64
+        invoice.addProduct(new BottleOfWine("Wino", new BigDecimal("20")), 4);
+        // 2x chedar - price with tax: 21.6
+        invoice.addProduct(new DairyProduct("Chedar", new BigDecimal("10")), 2);
+        // 1x chleb - price with tax: 5
+        invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 1);
+        // 1x chleb - price with tax: 5
+        invoice.addProduct(new TaxFreeProduct("Chleb", new BigDecimal("5")), 1);
+        //invoice.printProductList();
+        Assert.assertEquals(invoice.getProducts().size(), 4);
     }
 }

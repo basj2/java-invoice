@@ -68,7 +68,7 @@ public class Invoice {
         for (Product product : products.keySet()) {
             BigDecimal totalGross = product.getPriceWithTax()
                     .multiply(new BigDecimal(products.get(product)));
-            String productLine = String.format("%-20s %5d x%6.2f %-6.2f\n", 
+            String productLine = String.format("%-20s %5d x%6.2f %6.2f\n", 
                     product.getName(), products.get(product),
                     product.getPriceWithTax(), totalGross);
             productList += productLine;
